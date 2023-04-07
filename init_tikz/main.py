@@ -3,6 +3,22 @@ import os
 from .functions_tex import extract_tex_env
 
 
+tikz_render=r"""
+\vspace*{\fill}
+\begin{center}
+\input{tikz.tex}
+\end{center}
+\vspace*{\fill}
+\pagebreak
+"""
+
+tikz_code=r"""
+\vspace*{\fill}
+\inputminted[tabsize=4, breaklines]{tex}{tikz.tex}
+\vspace*{\fill}
+"""
+
+
 @click.command(
         help="Extracts tex environments from tex files"
         )
@@ -36,6 +52,8 @@ def main(inputfile, outputfile, environment):
     path_main = os.path.join(f'{path_tikz}/tikz', 'main.tex')
     extract_tex_env(inputfile, outputfile, environment)
 
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+
     with open(path_main, 'w') as file:
         file.write(f'\\documentclass{{article}}\n')
         file.write(f'\\usepackage{{v-equation}}\n')
@@ -44,18 +62,17 @@ def main(inputfile, outputfile, environment):
         file.write(f'\\vgeometry\n')
 
         file.write(f'\\begin{{document}}\n')
-        file.write(f'\\vspace*{{\\fill}}\n')
-        file.write(f'\\begin{{center}}\n')
-        file.write(f'\\input{{tikz-1.tex}}\n')
-        file.write(f'\\end{{center}}\n')
-        file.write(f'\\vspace*{{\\fill}}\n')
 
-        file.write(f'\\pagebreak\n')
-
+        if len(files) == 1:
+            file.write(f'{tikz_render.replace("tikz.tex", files[0])}\n')
+            file.write(f'{tikz_code.replace("tikz.tex", files[0])}\n')
         
-        file.write(f'\\vspace*{{\\fill}}\n')
-        file.write(f'\\inputminted[tabsize=4, breaklines, linenos=true, fontsize=\\small]{{tex}}{{tikz-1.tex}}\n')
-        file.write(f'\\vspace*{{\\fill}}\n')
+        else:
+            for f in files[1:-1]:
+                file.write(f'{tikz_render.replace("tikz.tex", f)}\n')
+                file.write(f'{tikz_code.replace("tikz.tex", f)}\n')
+                if f != files[-1]:
+                    file.write(f'\\pagebreak\n')
 
         file.write(f'\\end{{document}}')
 
