@@ -50,9 +50,16 @@ def main(inputfile, outputfile, environment):
     path_tikz = os.path.dirname(os.path.abspath(inputfile))
     os.makedirs(f'{path_tikz}/tikz', exist_ok=True)
     path_main = os.path.join(f'{path_tikz}/tikz', 'main.tex')
-    extract_tex_env(inputfile, outputfile, environment)
-
-    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    
+    try:
+        extract_tex_env(inputfile, outputfile, environment)
+        try:
+            global files
+            files = [f for f in os.listdir(f'{path_tikz}/tikz') if os.path.isfile(f)]
+        except:
+            click.echo("Faild to list files.")
+    except:
+        click.echo("Failed to extract_tex_env")
 
     with open(path_main, 'w') as file:
         file.write(f'\\documentclass{{article}}\n')
@@ -66,7 +73,6 @@ def main(inputfile, outputfile, environment):
         if len(files) == 1:
             file.write(f'{tikz_render.replace("tikz.tex", files[0])}\n')
             file.write(f'{tikz_code.replace("tikz.tex", files[0])}\n')
-        
         else:
             for f in files[1:-1]:
                 file.write(f'{tikz_render.replace("tikz.tex", f)}\n')
